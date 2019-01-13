@@ -1,0 +1,216 @@
+<!DOCTYPE HTML>
+<HTML>
+<HEAD>
+
+<script src="https://www.gstatic.com/firebasejs/5.7.3/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyDPQcoy-o8haHsSskx8uG4qSZiyK7T4SdM",
+    authDomain: "animalloverz.firebaseapp.com",
+    databaseURL: "https://animalloverz.firebaseio.com",
+    projectId: "animalloverz",
+    storageBucket: "animalloverz.appspot.com",
+    messagingSenderId: "533567092345"
+  };
+  firebase.initializeApp(config);
+</script>
+</HEAD>
+<BODY onload="readAll()">
+	<input id="choosefile" type="file" value="click here">
+	<input type="button" value="upload" onclick="tryToUpload()">
+	
+	<p id="fileList"> Fetching files.... Please wait</p>
+	
+	<script>
+		console.log("start");
+		
+		function downloadURI(uri, name) {
+			
+			var link = document.createElement("a");
+			link.download = name;
+			link.href = uri;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			delete link;
+		}
+		
+		function readAll(){
+			var auth = firebase.auth();
+			var imgRef=firebase.database().ref('files/');
+			imgRef.on('value', function(snapshot) {
+				if(snapshot.val()!=null){
+					obj = snapshot.val();
+					console.log(obj);
+					var filesAvailable=false;
+					var tableStr = "<table><tr><th>File Name</th><th></th></tr>";
+					for(var i=1;i<obj.length;i++){
+						if(obj[i].isDeleted=="false"){
+							filesAvailable=true;
+							tableStr+="<tr><td><a href='"+obj[i].reference+"'>"+ obj[i].name + "</a></td>";
+							tableStr+= "<td><input type='button' value='hide' id='"+obj[i].id+"' onclick='hideFile(this.id)'></td></tr>";
+						}
+					}
+				
+				/*	var tableStr = "<table><tr><th>File Name</th></tr>";
+					for(var i=1;i<obj.length;i++){
+						tableStr+="<tr><td><a href='"+obj[i].reference+"'>"+ obj[i].name + " </a></td></tr>";
+					}
+				*/	
+					if(filesAvailable){
+						tableStr+="</table>";
+						document.getElementById('fileList').innerHTML=tableStr;
+					}else{
+						document.getElementById('fileList').innerHTML="No Files Found";
+					}
+				}else{
+					console.log("file not found");
+					document.getElementById('fileList').innerHTML="No Files Found";
+				}
+			});	
+		}
+		
+		function writeUserData(fileId,fileName, ref, isDeleted) {
+		  var auth = firebase.auth();
+		  firebase.database().ref('files/'+fileId).set({
+			id : fileId,
+			name : fileName,
+			reference: ref,
+			isDeleted: isDeleted,
+		  });
+		}
+		
+		function uploadToDb(fileName, ref){
+			var auth = firebase.auth();
+			var imgRef=firebase.database().ref("GlobalData/latestFileId/");
+			var newId=1;
+			imgRef.once('value').then(function(snapshot) {
+				if(snapshot.val()!=null){
+					var obj = snapshot.val();
+					newId = obj+1;
+					console.log("new id: "+newId);
+					writeUserData(newId, fileName, ref, 'false');
+					
+					firebase.database().ref("GlobalData/").set({
+						latestFileId: newId});
+				}else{
+					console.log("file id not found");
+				}
+			});
+		}
+		
+		function uploadToStorage(){
+			var auth = firebase.auth();
+			var storageRef = firebase.storage().ref();
+		
+			var files = document.getElementById('choosefile').files;
+		
+		
+			for(var i=0;i<files.length;i++){
+				var file = files[i];
+				var metadata = {
+					'contentType': file.type
+				};
+				console.log("name "+file.name);
+		
+				var uploadTask = storageRef.child("files/"+file.name).put(file, metadata);
+				
+				uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+				  function(snapshot) {
+					var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+					console.log('Upload is ' + progress + '% done');
+					switch (snapshot.state) {
+					  case firebase.storage.TaskState.PAUSED: // or 'paused'
+						console.log('Upload is paused');
+						break;
+					  case firebase.storage.TaskState.RUNNING: // or 'running'
+						console.log('Upload is running');
+						break;
+					}
+				  }, function(error) {
+						switch (error.code) {
+							case 'storage/unauthorized':
+							  // User doesn't have permission to access the object
+							  break;
+
+							case 'storage/canceled':
+							  // User canceled the upload
+							  break;
+
+							case 'storage/unknown':
+							  // Unknown error occurred, inspect error.serverResponse
+							  break;
+						}
+				}, function() {
+					uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+						console.log('File available at', downloadURL);
+						console.log("file name "+file.name);
+						uploadToDb(file.name, downloadURL);
+					});
+				});
+			}
+		}
+		
+		function tryToUpload(){
+			var file = document.getElementById('choosefile').files[0];
+			
+			if(file!=null){
+				var metadata = {
+					'contentType': file.type
+				};
+				
+				var auth = firebase.auth();
+				var imgRef=firebase.database().ref('files/');
+				imgRef.once('value').then(function(snapshot) {
+					if(snapshot.val()!=null){
+						obj = snapshot.val();
+						var	foundFile = false;
+						for(var i=1;i<obj.length;i++){
+							if(obj[i].name==file.name&&obj[i].isDeleted=='false'){
+								var r = confirm("File with same name exists. Do you want to overwrite?");
+								foundFile = true;
+								if (r == true) { 
+								  uploadToStorage();
+								}
+								break;
+							}
+						}
+						
+						if(foundFile==false)
+							uploadToStorage();
+					}else{
+						console.log("folder 'files' not found");
+						uploadToStorage();
+					}
+				});
+			}else{
+				window.alert("Choose files first");
+			}
+		}
+		
+		function hideFile(fileId){
+			console.log("hide :"+fileId);
+			var imgRef=firebase.database().ref('files/'+fileId);
+			imgRef.once('value').then(function(snapshot){
+				if(snapshot.val()!=null){
+					var obj = snapshot.val();
+					obj.isDeleted = 'true';
+					firebase.database().ref('files/'+fileId).set(obj);
+				}else{
+					console.log("file not found");
+				}
+			});
+			
+		}
+		
+		
+	</script>
+</BODY>
+
+</HTML>
+
+
+
+
+
