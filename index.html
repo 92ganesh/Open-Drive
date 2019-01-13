@@ -3,27 +3,46 @@
 <HEAD>
 
 <script src="https://www.gstatic.com/firebasejs/5.7.3/firebase.js"></script>
+
 <script>
   // Initialize Firebase
   var config = {
-    apiKey: "AIzaSyDPQcoy-o8haHsSskx8uG4qSZiyK7T4SdM",
-    authDomain: "animalloverz.firebaseapp.com",
-    databaseURL: "https://animalloverz.firebaseio.com",
-    projectId: "animalloverz",
-    storageBucket: "animalloverz.appspot.com",
-    messagingSenderId: "533567092345"
+    apiKey: "AIzaSyApx_LlgW-wCGVx6Y4XaTntoUDzia5dvg0",
+    authDomain: "opendrive-69521.firebaseapp.com",
+    databaseURL: "https://opendrive-69521.firebaseio.com",
+    projectId: "opendrive-69521",
+    storageBucket: "opendrive-69521.appspot.com",
+    messagingSenderId: "109859353589"
   };
   firebase.initializeApp(config);
 </script>
 </HEAD>
-<BODY onload="readAll()">
+<BODY>
 	<input id="choosefile" type="file" value="click here">
 	<input type="button" value="upload" onclick="tryToUpload()">
 	
 	<p id="fileList"> Fetching files.... Please wait</p>
 	
 	<script>
-		console.log("start");
+		var auth = firebase.auth();
+		
+		window.onload = function() {
+		  auth.onAuthStateChanged(function(user) {
+			if (user) {
+			  console.log('Anonymous user signed-in.', user);
+			  readAll();
+			} else {
+			  console.log('There was no anonymous session. Creating a new anonymous user.');
+			  // Sign the user in anonymously since accessing Storage requires the user to be authorized.
+			  auth.signInAnonymously().catch(function(error) {
+				if (error.code === 'auth/operation-not-allowed') {
+				  window.alert('Anonymous Sign-in failed. Please make sure that you have enabled anonymous ' +
+					  'sign-in on your Firebase project.');
+				}
+			  });
+			}
+		  });
+		}
 		
 		function downloadURI(uri, name) {
 			
