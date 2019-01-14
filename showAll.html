@@ -25,12 +25,7 @@
 </HEAD>
 <BODY>
 	<input id="choosefile" type="file" value="click here">
-	<input type="button" value="upload" onclick="tryToUpload()"> <br> <br>
-	
-	<a href="showAll.html">show all files</a>  <br>
-	<a href="deleteFiles.html">delete files</a><br>
-	
-	<p id="uploadList"> </p> <br>
+	<input type="button" value="upload" onclick="tryToUpload()"> <br>
 	
 	<p id="fileList"> Fetching files.... Please wait</p>
 	
@@ -41,7 +36,7 @@
 		  auth.onAuthStateChanged(function(user) {
 			if (user) {
 			  console.log('Anonymous user signed-in.', user);
-			  readFiles(false);
+			  readFiles(true);
 			} else {
 			  console.log('There was no anonymous session. Creating a new anonymous user.');
 			  // Sign the user in anonymously since accessing Storage requires the user to be authorized.
@@ -67,24 +62,20 @@
 		}
 		
 		function readFiles(readHiddenFiles){
+			var auth = firebase.auth();
 			var imgRef=firebase.database().ref('files/');
 			imgRef.on('value', function(snapshot) {
 				if(snapshot.val()!=null){
 					obj = snapshot.val();
 					console.log(obj);
 					var filesAvailable=false;
-					var tableStr = "<table><tr><th>File Name</th><th></th></tr>";
+					var tableStr = "<table><tr><th>File Name</th><th>Hidden status</th></tr>";
 					for(var i=1;i<obj.length;i++){
 						if(obj[i].isDeleted=="false"){
-							if(obj[i].isHidden=="false"){
-								filesAvailable=true;
-								tableStr+="<tr><td><a href='"+obj[i].reference+"'>"+ obj[i].name + "</a></td>";
-								tableStr+= "<td><input type='button' value='hide' id='"+obj[i].id+"' onclick='hideFile(this.id)'></td></tr>";
-							}else if(obj[i].isHidden=="true"&&readHiddenFiles){
-								filesAvailable=true;
-								tableStr+="<tr><td><a href='"+obj[i].reference+"'>"+ obj[i].name + "</a></td>";
-								tableStr+= "<td><input type='button' value='hide' id='"+obj[i].id+"' onclick='hideFile(this.id)'></td></tr>";
-							}
+							filesAvailable=true;
+							tableStr+="<tr><td><a href='"+obj[i].reference+"'>"+ obj[i].name + "</a></td>";
+					<!--	tableStr+= "<td><input type='button' value='hide' id='"+obj[i].id+"' onclick='hideFile(this.id)'></td></tr>";  -->
+							tableStr+= "<td>"+ obj[i].isHidden +"</td></tr>"; 
 						}
 					}
 					
@@ -102,6 +93,7 @@
 		}
 		
 		function writeUserData(fileId,fileName, ref, isHidden, isDeleted) {
+		  var auth = firebase.auth();
 		  firebase.database().ref('files/'+fileId).set({
 			id : fileId,
 			name : fileName,
@@ -112,6 +104,7 @@
 		}
 		
 		function uploadToDb(fileName, ref){
+			var auth = firebase.auth();
 			var imgRef=firebase.database().ref("GlobalData/latestFileId/");
 			var newId=1;
 			imgRef.once('value').then(function(snapshot) {
@@ -130,6 +123,7 @@
 		}
 		
 		function uploadToStorage(){
+			var auth = firebase.auth();
 			var storageRef = firebase.storage().ref();
 		
 			var files = document.getElementById('choosefile').files;
