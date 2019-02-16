@@ -1,7 +1,18 @@
-<!DOCTYPE HTML>
-<HTML>
-<HEAD>
-<!--<script src="https://www.gstatic.com/firebasejs/5.7.3/firebase.js"></script> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+		<link
+		  href="https://fonts.googleapis.com/css?family=Montserrat:400,500"
+		  rel="stylesheet"
+		/>
+    <meta name="theme-color" content="#ffffff" />
+
+<title>Open Drive</title>
+	
+	<!--<script src="https://www.gstatic.com/firebasejs/5.7.3/firebase.js"></script> -->
 <script src="https://www.gstatic.com/firebasejs/5.7.2/firebase-app.js"></script>
 
 <!-- Add additional services that you want to use -->
@@ -24,18 +35,20 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
 <style>
-table {
-  border-collapse: collapse;
-}
-
-table, td, th {
-  border: 1px solid black;
-  padding : 5px;
-}
+	table {
+	  border-collapse: collapse;
+	}
+	table, td, th {
+	  border: 1px solid black;
+	  padding : 5px;
+	}
 </style>
-</HEAD>
-<BODY>
-	<center><h2>Restricted view mode</h2></center>
+	
+  <link rel="shortcut icon" href="icons/w.png" />
+  <link rel="manifest" href="./manifest.json" />
+</head>
+<body>
+<center><h2>Restricted view mode</h2></center>
 <pre>
 <a href="login.html">Open unrestricted mode</a> 
 </pre>
@@ -49,8 +62,9 @@ table, td, th {
 	</table>
 	
 	<p id="fileList"> Fetching files.... Please wait</p>
-	
+
 	<script>
+	
 		var auth = firebase.auth();
 		var uploading = false;
 		
@@ -194,11 +208,9 @@ table, td, th {
 							case 'storage/unauthorized':
 							  // User doesn't have permission to access the object
 							  break;
-
 							case 'storage/canceled':
 							  // User canceled the upload
 							  break;
-
 							case 'storage/unknown':
 							  // Unknown error occurred, inspect error.serverResponse
 							  break;
@@ -268,11 +280,8 @@ table, td, th {
 		
 		
 	</script>
-</BODY>
-
-</HTML>
-
+<script src="./app.js"></script>
+</body>
 
 
-
-
+</html>

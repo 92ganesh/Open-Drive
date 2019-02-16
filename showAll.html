@@ -39,7 +39,7 @@ table, td, th {
 <BODY>
 <pre>
 	<center><h2>Unrestricted view mode</h2></center>
-<a href="unrestrictedModeIndex.html">Show unhidden files</a>   		<a href="deleteFiles.html">Delete files</a>
+<a href="unrestrictedModeIndex.html">Show unhidden files</a>   		<a href="deleteFiles.html">Delete files</a>			<input type="button" value="Logout" onclick="resetLogin()">
 </pre>
 	<input id="choosefile" type="file" value="click here">
 	<input type="button" value="upload" onclick="tryToUpload()"> <br>
@@ -59,8 +59,21 @@ table, td, th {
 		window.onload = function() {
 		  auth.onAuthStateChanged(function(user) {
 			if (user) {
-			  console.log('Anonymous user signed-in.', user);
-			  readFiles(true);
+				console.log('Anonymous user signed-in.', user);
+			    
+				// check if user is logged in
+				var logstatus = firebase.database().ref('GlobalData/status');
+				logstatus.once('value').then(function(snapshot) {
+					if(snapshot.val()!=null){
+						obj = snapshot.val();
+						console.log("status "+obj);
+						if(obj=='false'){
+							window.open("index.html","_self");
+						}else{
+							readFiles(true);
+						}
+					}
+				});
 			} else {
 			  console.log('There was no anonymous session. Creating a new anonymous user.');
 			  // Sign the user in anonymously since accessing Storage requires the user to be authorized.
@@ -259,7 +272,10 @@ table, td, th {
 			
 		}
 		
-		
+		function resetLogin(){
+			firebase.database().ref('GlobalData/status').set('false');
+			window.open('index.html', '_self');
+		}
 	</script>
 </BODY>
 

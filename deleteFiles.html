@@ -1,6 +1,8 @@
 <!DOCTYPE HTML>
 <HTML>
 <HEAD>
+
+
 <!--<script src="https://www.gstatic.com/firebasejs/5.7.3/firebase.js"></script> -->
 <script src="https://www.gstatic.com/firebasejs/5.7.2/firebase-app.js"></script>
 
@@ -27,7 +29,6 @@
 table {
   border-collapse: collapse;
 }
-
 table, td, th {
   border: 1px solid black;
   padding : 5px;
@@ -35,24 +36,20 @@ table, td, th {
 </style>
 </HEAD>
 <BODY>
-	<center><h2>Unrestricted view mode</h2></center>
 <pre>
-<a href="showAll.html">Show all files</a>  		<a href="deleteFiles.html">Delete files</a>		<input type="button" value="Logout" onclick="resetLogin()">
+	<center><h2>Unrestricted view mode</h2></center>
+<a href="unrestrictedModeIndex.html">Show unhidden files</a>  		<a href="showAll.html">Show all files</a>
 </pre>
 	<input id="choosefile" type="file" value="click here">
-	<input type="button" value="upload" onclick="tryToUpload()"> <br> <br>
-
+	<input type="button" value="upload" onclick="tryToUpload()"> <br>
 	
-	<br>
 	<table id="uploadList"><tr><th>File Name</th><th>Done(MB)</th><th>Total(MB)</th><th>Status</th></tr>
-		
 	</table>
 	
 	<p id="fileList"> Fetching files.... Please wait</p>
 	
 	<script>
 		var auth = firebase.auth();
-		var uploading = false;
 		
 		$(document).ready(function(){
 			$("#uploadList").hide();
@@ -61,8 +58,9 @@ table, td, th {
 		window.onload = function() {
 		  auth.onAuthStateChanged(function(user) {
 			if (user) {
-				console.log('Anonymous user signed-in.', user);
-				// check if user is logged in
+				  console.log('Anonymous user signed-in.', user);
+				  
+				  // check if user is logged in
 				var logstatus = firebase.database().ref('GlobalData/status');
 				logstatus.once('value').then(function(snapshot) {
 					if(snapshot.val()!=null){
@@ -88,6 +86,7 @@ table, td, th {
 		  });
 		}
 		
+		
 		function downloadURI(uri, name) {
 			
 			var link = document.createElement("a");
@@ -100,27 +99,20 @@ table, td, th {
 		}
 		
 		function readFiles(readHiddenFiles){
+			var auth = firebase.auth();
 			var imgRef=firebase.database().ref('files/');
 			imgRef.on('value', function(snapshot) {
 				if(snapshot.val()!=null){
 					obj = snapshot.val();
+					console.log(obj);
 					var filesAvailable=false;
-					var tableStr = "<table><tr><th>File Name</th><th></th></tr>";
+					var tableStr = "<table><tr><th>File Name</th><th>Hidden</th><th></th></tr>";
 					for(var i=1;i<obj.length;i++){
 						if(obj[i].isDeleted=="false"){
-							if(obj[i].isHidden=="false"){
-								filesAvailable=true;
-								tableStr+= "<tr>";
-								tableStr+= "<td><a href='"+obj[i].reference+"'>"+ obj[i].name + "</a></td>";
-								tableStr+= "<td><input type='button' value='hide' id='"+obj[i].id+"' onclick='hideFile(this.id)'></td>";
-								tableStr+= "</tr>";
-							}else if(obj[i].isHidden=="true"&&readHiddenFiles){
-								filesAvailable=true;
-								tableStr+= "<tr>";
-								tableStr+= "<td><a href='"+obj[i].reference+"'>"+ obj[i].name + "</a></td>";
-								tableStr+= "<td><input type='button' value='hide' id='"+obj[i].id+"' onclick='hideFile(this.id)'></td>";
-								tableStr+= "</tr>";
-							}
+							filesAvailable=true;
+							tableStr+="<tr><td><a href='"+obj[i].reference+"'>"+ obj[i].name + "</a></td>";
+							tableStr+= "<td>"+ obj[i].isHidden +"</td>"; 
+							tableStr+= "<td><input type='button' value='delete' id='"+obj[i].id+"' name='"+obj[i].name+"' onclick='deleteFile(this.id,this.name)'></td></tr>"; 
 						}
 					}
 					
@@ -138,6 +130,7 @@ table, td, th {
 		}
 		
 		function writeUserData(fileId,fileName, ref, isHidden, isDeleted) {
+		  var auth = firebase.auth();
 		  firebase.database().ref('files/'+fileId).set({
 			id : fileId,
 			name : fileName,
@@ -148,6 +141,7 @@ table, td, th {
 		}
 		
 		function uploadToDb(fileName, ref){
+			var auth = firebase.auth();
 			var imgRef=firebase.database().ref("GlobalData/latestFileId/");
 			var newId=1;
 			imgRef.once('value').then(function(snapshot) {
@@ -206,11 +200,9 @@ table, td, th {
 							case 'storage/unauthorized':
 							  // User doesn't have permission to access the object
 							  break;
-
 							case 'storage/canceled':
 							  // User canceled the upload
 							  break;
-
 							case 'storage/unknown':
 							  // Unknown error occurred, inspect error.serverResponse
 							  break;
@@ -239,7 +231,7 @@ table, td, th {
 						obj = snapshot.val();
 						var	foundFile = false;
 						for(var i=1;i<obj.length;i++){
-							if(obj[i].isDeleted=="false"&&obj[i].name==file.name){
+							if(obj[i].name==file.name){
 								var r = confirm("File with same name exists. Do you want to overwrite?");
 								foundFile = true;
 								if (r == true) { 
@@ -263,32 +255,21 @@ table, td, th {
 			}
 		}
 		
-		function hideFile(fileId){
-			console.log("hide :"+fileId);
-			var imgRef=firebase.database().ref('files/'+fileId);
-			imgRef.once('value').then(function(snapshot){
-				if(snapshot.val()!=null){
-					var obj = snapshot.val();
-					obj.isHidden = 'true';
-					firebase.database().ref('files/'+fileId).set(obj);
-				}else{
-					console.log("file not found");
-				}
+		function deleteFile(fileId, fileName){
+			var dbRef=firebase.database().ref('files/'+fileId);
+			var storageRef = firebase.storage().ref();
+		
+			var stoRef = firebase.storage().ref().child('files/'+fileName);
+			stoRef.delete().then(function() {
+			  console.log("file deleted");
+			  firebase.database().ref('files/'+fileId+'/isDeleted').set('true');
+			}).catch(function(error) {
+			  // Uh-oh, an error occurred!
 			});
-			
 		}
 		
-		function resetLogin(){
-			firebase.database().ref('GlobalData/gan').set('false');
-			window.open('index.html', '_self');
-		}
 		
 	</script>
 </BODY>
 
 </HTML>
-
-
-
-
-

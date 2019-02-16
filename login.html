@@ -1,6 +1,28 @@
 <!DOCTYPE HTML>
 <HTML>
 <HEAD>
+	<!--<script src="https://www.gstatic.com/firebasejs/5.7.3/firebase.js"></script> -->
+	<script src="https://www.gstatic.com/firebasejs/5.7.2/firebase-app.js"></script>
+
+	<!-- Add additional services that you want to use -->
+	<script src="https://www.gstatic.com/firebasejs/5.7.2/firebase-auth.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/5.7.2/firebase-database.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/5.7.2/firebase-storage.js"></script> 
+	<script>
+	  // Initialize Firebase
+	  var config = {
+		apiKey: "AIzaSyDNtZL7iuvfKrlNb7fzVp6Uu9InDewtffw",
+		authDomain: "projects92.firebaseapp.com",
+		databaseURL: "https://projects92.firebaseio.com",
+		projectId: "projects92",
+		storageBucket: "projects92.appspot.com",
+		messagingSenderId: "194786329134"
+	  };
+	  firebase.initializeApp(config);
+	</script>
+
+
+
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 
 	<!-- jQuery library -->
@@ -39,15 +61,49 @@
     </div>
 	
 	<script>
+		var auth = firebase.auth();
 		function checkPassword(){
 			var password = document.getElementById("password").value;
-			if(password=='opendrivenow'){
-				window.open('unrestrictedModeIndex.html', '_self');
-			}else{
-				window.alert("wrong password");
-			}
+			var actualPassRef = firebase.database().ref('GlobalData/password');
+			console.log("typed "+password);
+			actualPassRef.once('value').then(function(snapshot) {
+				if(snapshot.val()!=null){
+					obj = snapshot.val();
+					if(password==obj){
+						console.log("password matched");
+						firebase.database().ref('GlobalData/status').set('true', 
+						  function(error) {
+							if (error) {
+							  // The write failed...
+							} else {
+							  window.open('unrestrictedModeIndex.html', '_self');
+							}
+						  });
+
+					}else{
+						console.log("password not matched");
+						window.alert("wrong password");
+					}
+				}
+			});
+			
 		}
 	</script>
 	
 </BODY>
 </HTML>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
