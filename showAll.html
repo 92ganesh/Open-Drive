@@ -150,9 +150,7 @@ table, td, th {
 					newId = obj+1;
 					console.log("new id: "+newId);
 					writeUserData(newId, fileName, ref, 'false', 'false');
-					
-					firebase.database().ref("GlobalData/").set({
-						latestFileId: newId});
+					firebase.database().ref("GlobalData/latestFileId/").set(newId);
 				}else{
 					console.log("file id not found");
 				}
