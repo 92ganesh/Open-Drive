@@ -15,15 +15,16 @@ You need to provide your own firebase credentials in <head> tag in index.html
 
 ## Key features
 - Can be accessed from any device having working internet connection
-- Its a PWA(Progressive Web App) hence promts to install app when visited by mobile devices(use chrome). Once installed can be used like a normal app
+- Its a <b>PWA</b>(Progressive Web App) hence promts to install app when visited by mobile devices(use chrome). Once installed can be used like a normal app
 - Upload any type of file
+- Displays upload status of files
 - Download files
 - Hide files
 - delete files
 - login for carring out critcal operations like viewing hidden files or deleting them 
 
 <p align="center">
-  <img alt="Application Form" src="https://github.com/92ganesh/Recruit.me/blob/master/student%20form.gif">
+  <img alt="Open Drive Gif" src="https://raw.githubusercontent.com/92ganesh/Open-Drive/master/OpenDrive.gif?token=AYDgvyi4qR_qqYONILtoiblKXjNuqfdSks5cdHZawA%3D%3D">
 </p>
 
 
