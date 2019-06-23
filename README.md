@@ -24,7 +24,7 @@ You need to provide your own firebase credentials in <head> tag in index.html
 - login for carring out critcal operations like viewing hidden files or deleting them 
 
 <p align="center">
-  <img alt="Open Drive Gif" src="https://raw.githubusercontent.com/92ganesh/Open-Drive/master/OpenDrive.gif?token=AYDgvyi4qR_qqYONILtoiblKXjNuqfdSks5cdHZawA%3D%3D">
+  <img alt="Open Drive Gif" src="https://github.com/92ganesh/Open-Drive/blob/master/OpenDrive.gif">
 </p>
 
 
